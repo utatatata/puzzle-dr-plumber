@@ -6,19 +6,13 @@ import Control.Comonad (class Comonad)
 import Control.Extend (class Extend)
 import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
 import Data.List (List(..), (:), drop)
+import Data.List.Extra (iterate)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (class Traversable, traverse)
 
 class LeftRight a where
   left :: a -> Maybe a
   right :: a -> Maybe a
-
-iterate :: forall a. (a -> Maybe a) -> a -> List a
-iterate f = flip go Nil
-  where
-  go a accum = case f a of
-    Nothing -> a : accum
-    Just a' -> go a' (a : Nil)
 
 iterateLeft :: forall lr. LeftRight lr => lr -> List lr
 iterateLeft = iterate left
