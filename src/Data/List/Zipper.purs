@@ -1,7 +1,6 @@
 module Data.List.Zipper where
 
 import Prelude
-
 import Control.Comonad (class Comonad)
 import Control.Extend (class Extend)
 import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
@@ -20,13 +19,14 @@ iterateLeft = iterate left
 iterateRight :: forall lr. LeftRight lr => lr -> List lr
 iterateRight = iterate right
 
-data Zipper a = Zipper (List a) a (List a)
+data Zipper a
+  = Zipper (List a) a (List a)
 
 instance leftRightZipper :: LeftRight (Zipper a) where
   left (Zipper Nil _ _) = Nothing
-  left (Zipper (l:ls) c rs) = Just $ Zipper ls l (c:rs)
+  left (Zipper (l : ls) c rs) = Just $ Zipper ls l (c : rs)
   right (Zipper _ _ Nil) = Nothing
-  right (Zipper ls c (r:rs)) = Just $ Zipper (c:ls) r rs
+  right (Zipper ls c (r : rs)) = Just $ Zipper (c : ls) r rs
 
 instance functorZipper :: Functor Zipper where
   map f (Zipper ls c rs) = Zipper (map f ls) (f c) (map f rs)
@@ -46,7 +46,8 @@ instance traversableZipper :: Traversable Zipper where
   traverse f (Zipper ls c rs) = Zipper <$> traverse f ls <*> f c <*> traverse f rs
   sequence = traverse identity
 
-newtype DoubleZipper a = DoubleZipper (Zipper (Zipper a))
+newtype DoubleZipper a
+  = DoubleZipper (Zipper (Zipper a))
 
 up :: forall a. DoubleZipper a -> Maybe (DoubleZipper a)
 up (DoubleZipper zz) = DoubleZipper <$> left zz
@@ -80,7 +81,7 @@ instance functorDoubleZipper :: Functor DoubleZipper where
   map f (DoubleZipper zz) = DoubleZipper $ map (map f) zz
 
 instance extendDoubleZipper :: Extend DoubleZipper where
-  extend f (DoubleZipper zz) = map f $ map DoubleZipper <<< DoubleZipper <<< roll $  roll zz
+  extend f (DoubleZipper zz) = map f $ map DoubleZipper <<< DoubleZipper <<< roll $ roll zz
     where
     roll :: forall a. Zipper (Zipper a) -> Zipper (Zipper (Zipper a))
     roll zz = Zipper (drop 1 $ iterateInnerLeft zz) zz (drop 1 $ iterateInnerRight zz)
