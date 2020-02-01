@@ -85,3 +85,6 @@ instance extendDoubleZipper :: Extend DoubleZipper where
     where
     roll :: forall a. Zipper (Zipper a) -> Zipper (Zipper (Zipper a))
     roll zz = Zipper (drop 1 $ iterateInnerLeft zz) zz (drop 1 $ iterateInnerRight zz)
+
+instance comonadDoubleZipper :: Comonad DoubleZipper where
+  extract (DoubleZipper (Zipper _ (Zipper _ c _) _)) = c
